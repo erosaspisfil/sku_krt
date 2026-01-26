@@ -267,122 +267,242 @@ with col2:
     """, unsafe_allow_html=True)
 
 # ============================================================================
-# COBERTURA GEOGRÁFICA - RUTAS DESDE LURÍN
+# COBERTURA GEOGRÁFICA - COMPARATIVA SAN LUIS vs LURÍN
 # ============================================================================
-st.markdown('<p class="section-title">🗺️ Cobertura Geográfica desde Centro de Distribución</p>', unsafe_allow_html=True)
+st.markdown('<p class="section-title">🗺️ Impacto del Cambio de Almacén en Tiempos de Entrega</p>', unsafe_allow_html=True)
 
-col1, col2 = st.columns([2, 1])
+st.markdown("""
+<div class="insight-box">
+<strong>📍 Contexto del cambio:</strong> En Agosto 2025, el centro de distribución se trasladó de <b>San Luis</b> (centro-este de Lima) 
+a <b>Lurín</b> (extremo sur). Esta comparativa muestra el impacto en los tiempos de entrega hacia las principales zonas comerciales.
+</div>
+""", unsafe_allow_html=True)
+
+# Coordenadas de ambos almacenes
+san_luis = {"lat": -12.070136596787389, "lon": -76.99200082864617, "nombre": "CD San Luis"}
+lurin = {"lat": -12.269444, "lon": -76.890889, "nombre": "CD Lurín"}
+
+# Zonas de destino con tiempos desde ambos almacenes
+zonas = {
+    "Wilson": {"lat": -12.054828666634194, "lon": -77.03806428818251, 
+               "tiempo_sanluis": "20min", "km_sanluis": "5",
+               "tiempo_lurin": "1h 20min", "km_lurin": "32"},
+    "Paruro": {"lat": -12.05042038678001, "lon": -77.02406775564982, 
+               "tiempo_sanluis": "18min", "km_sanluis": "4",
+               "tiempo_lurin": "1h 25min", "km_lurin": "33"},
+    "Malvinas": {"lat": -12.043337534371508, "lon": -77.04817089428148, 
+                 "tiempo_sanluis": "25min", "km_sanluis": "6",
+                 "tiempo_lurin": "1h 30min", "km_lurin": "35"},
+    "Azángaro": {"lat": -12.051654779770855, "lon": -77.03062129243266, 
+                 "tiempo_sanluis": "18min", "km_sanluis": "4",
+                 "tiempo_lurin": "1h 25min", "km_lurin": "33"},
+    "CompuPalace": {"lat": -12.116443820363907, "lon": -77.02803893901076, 
+                    "tiempo_sanluis": "15min", "km_sanluis": "6",
+                    "tiempo_lurin": "50min", "km_lurin": "22"},
+    "Marsano": {"lat": -12.117517551566221, "lon": -77.00740718503695, 
+                "tiempo_sanluis": "12min", "km_sanluis": "5",
+                "tiempo_lurin": "45min", "km_lurin": "20"}
+}
+
+# Colores por zona
+colores_zona = {
+    "Wilson": "#e94560",
+    "Paruro": "#4361ee", 
+    "Malvinas": "#00bf63",
+    "Azángaro": "#7209b7",
+    "CompuPalace": "#ff6b35",
+    "Marsano": "#4cc9f0"
+}
+
+# Crear dos mapas lado a lado
+col1, col2 = st.columns(2)
 
 with col1:
-    # Coordenadas exactas
-    lurin = {"lat": -12.269444, "lon": -76.890889, "nombre": "CD Lurín"}
+    st.markdown("""
+    <div style="text-align: center; padding: 0.5rem; background: linear-gradient(135deg, #00bf63 0%, #2ecc71 100%); color: white; border-radius: 8px 8px 0 0; font-weight: 600;">
+    ✅ ANTES: San Luis (Ene-Jul 2025)
+    </div>
+    """, unsafe_allow_html=True)
     
-    zonas = {
-        "Wilson": {"lat": -12.054828666634194, "lon": -77.03806428818251, "tiempo": "1h 20min", "km": "32"},
-        "Paruro": {"lat": -12.05042038678001, "lon": -77.02406775564982, "tiempo": "1h 25min", "km": "33"},
-        "Malvinas": {"lat": -12.043337534371508, "lon": -77.04817089428148, "tiempo": "1h 30min", "km": "35"},
-        "Azángaro": {"lat": -12.051654779770855, "lon": -77.03062129243266, "tiempo": "1h 25min", "km": "33"},
-        "CompuPalace": {"lat": -12.116443820363907, "lon": -77.02803893901076, "tiempo": "50min", "km": "22"},
-        "Marsano": {"lat": -12.117517551566221, "lon": -77.00740718503695, "tiempo": "45min", "km": "20"}
-    }
+    fig_sanluis = go.Figure()
     
-    # Colores por zona
-    colores_zona = {
-        "Wilson": "#e94560",
-        "Paruro": "#4361ee", 
-        "Malvinas": "#00bf63",
-        "Azángaro": "#7209b7",
-        "CompuPalace": "#ff6b35",
-        "Marsano": "#4cc9f0"
-    }
-    
-    fig_mapa = go.Figure()
-    
-    # Rutas desde Lurín a cada zona
+    # Rutas desde San Luis
     for zona, coords in zonas.items():
-        fig_mapa.add_trace(go.Scattermapbox(
+        fig_sanluis.add_trace(go.Scattermapbox(
+            lat=[san_luis["lat"], coords["lat"]],
+            lon=[san_luis["lon"], coords["lon"]],
+            mode='lines',
+            line=dict(width=3, color=colores_zona[zona]),
+            name=f'{zona} ({coords["tiempo_sanluis"]})',
+            hoverinfo='text',
+            hovertext=f'Ruta a {zona}<br>Distancia: {coords["km_sanluis"]} km<br>Tiempo: {coords["tiempo_sanluis"]}'
+        ))
+    
+    # Marcador San Luis
+    fig_sanluis.add_trace(go.Scattermapbox(
+        lat=[san_luis["lat"]],
+        lon=[san_luis["lon"]],
+        mode='markers',
+        marker=dict(size=20, color='#00bf63', symbol='circle'),
+        name='CD San Luis',
+        hoverinfo='text',
+        hovertext='<b>CD San Luis</b><br>Jr. Salaverry 161<br><i>Operó hasta Jul 2025</i>'
+    ))
+    
+    # Marcadores de zonas
+    for zona, coords in zonas.items():
+        fig_sanluis.add_trace(go.Scattermapbox(
+            lat=[coords["lat"]],
+            lon=[coords["lon"]],
+            mode='markers',
+            marker=dict(size=12, color=colores_zona[zona]),
+            hoverinfo='text',
+            hovertext=f'<b>{zona}</b><br>Tiempo: {coords["tiempo_sanluis"]}',
+            showlegend=False
+        ))
+    
+    fig_sanluis.update_layout(
+        mapbox=dict(style="carto-positron", center=dict(lat=-12.08, lon=-77.01), zoom=11.5),
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5, font=dict(size=9)),
+        showlegend=True
+    )
+    
+    st.plotly_chart(fig_sanluis, use_container_width=True)
+
+with col2:
+    st.markdown("""
+    <div style="text-align: center; padding: 0.5rem; background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%); color: white; border-radius: 8px 8px 0 0; font-weight: 600;">
+    ⚠️ AHORA: Lurín (Ago-Dic 2025)
+    </div>
+    """, unsafe_allow_html=True)
+    
+    fig_lurin = go.Figure()
+    
+    # Rutas desde Lurín
+    for zona, coords in zonas.items():
+        fig_lurin.add_trace(go.Scattermapbox(
             lat=[lurin["lat"], coords["lat"]],
             lon=[lurin["lon"], coords["lon"]],
             mode='lines',
             line=dict(width=3, color=colores_zona[zona]),
-            name=f'{zona} ({coords["tiempo"]})',
+            name=f'{zona} ({coords["tiempo_lurin"]})',
             hoverinfo='text',
-            hovertext=f'Ruta a {zona}<br>Distancia: {coords["km"]} km<br>Tiempo: {coords["tiempo"]}'
+            hovertext=f'Ruta a {zona}<br>Distancia: {coords["km_lurin"]} km<br>Tiempo: {coords["tiempo_lurin"]}'
         ))
     
-    # Marcador CD Lurín
-    fig_mapa.add_trace(go.Scattermapbox(
+    # Marcador Lurín
+    fig_lurin.add_trace(go.Scattermapbox(
         lat=[lurin["lat"]],
         lon=[lurin["lon"]],
-        mode='markers+text',
-        marker=dict(size=22, color=COLORS['primary'], symbol='circle'),
+        mode='markers',
+        marker=dict(size=20, color='#e94560', symbol='circle'),
         name='CD Lurín',
-        text=['📦 ALMACÉN'],
-        textposition='bottom center',
-        textfont=dict(size=11, color=COLORS['primary'], family='Arial Black'),
         hoverinfo='text',
-        hovertext='<b>Centro de Distribución</b><br>Lurín, Km 29.5 Panamericana Sur<br><i>Nuevo desde Agosto 2025</i>'
+        hovertext='<b>CD Lurín</b><br>Km 29.5 Panamericana Sur<br><i>Opera desde Ago 2025</i>'
     ))
     
-    # Marcadores de cada zona
+    # Marcadores de zonas
     for zona, coords in zonas.items():
-        fig_mapa.add_trace(go.Scattermapbox(
+        fig_lurin.add_trace(go.Scattermapbox(
             lat=[coords["lat"]],
             lon=[coords["lon"]],
-            mode='markers+text',
-            marker=dict(size=14, color=colores_zona[zona]),
-            name=zona,
-            text=[zona],
-            textposition='top center',
-            textfont=dict(size=9, color=colores_zona[zona], family='Arial'),
+            mode='markers',
+            marker=dict(size=12, color=colores_zona[zona]),
             hoverinfo='text',
-            hovertext=f'<b>{zona}</b><br>Tiempo desde Lurín: {coords["tiempo"]}<br>Distancia: {coords["km"]} km',
+            hovertext=f'<b>{zona}</b><br>Tiempo: {coords["tiempo_lurin"]}',
             showlegend=False
         ))
     
-    fig_mapa.update_layout(
-        mapbox=dict(
-            style="carto-positron",
-            center=dict(lat=-12.15, lon=-77.00),
-            zoom=10
-        ),
+    fig_lurin.update_layout(
+        mapbox=dict(style="carto-positron", center=dict(lat=-12.15, lon=-76.97), zoom=10.2),
         margin=dict(l=0, r=0, t=0, b=0),
-        height=500,
-        legend=dict(
-            orientation="v", 
-            yanchor="top", 
-            y=0.98, 
-            xanchor="left", 
-            x=0.01,
-            bgcolor="rgba(255,255,255,0.95)",
-            font=dict(size=10),
-            title=dict(text="🚚 Rutas de distribución", font=dict(size=11))
-        ),
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5, font=dict(size=9)),
         showlegend=True
     )
     
-    st.plotly_chart(fig_mapa, use_container_width=True)
+    st.plotly_chart(fig_lurin, use_container_width=True)
+
+# Tabla comparativa de tiempos
+st.markdown("#### ⏱️ Comparativa de Tiempos de Entrega")
+
+col1, col2, col3 = st.columns([1.2, 1.2, 0.8])
+
+with col1:
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, {COLORS['success']} 0%, #2ecc71 100%); color: white; padding: 1.2rem; border-radius: 10px;">
+        <h4 style="margin: 0 0 0.8rem 0; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 0.5rem;">✅ Desde San Luis</h4>
+        <div style="font-size: 0.85rem; line-height: 2;">
+            <div style="display: flex; justify-content: space-between;"><span>🔴 Wilson</span><span><b>20 min</b></span></div>
+            <div style="display: flex; justify-content: space-between;"><span>🔵 Paruro</span><span><b>18 min</b></span></div>
+            <div style="display: flex; justify-content: space-between;"><span>🟢 Malvinas</span><span><b>25 min</b></span></div>
+            <div style="display: flex; justify-content: space-between;"><span>🟣 Azángaro</span><span><b>18 min</b></span></div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; margin-top: 6px;"><span>🟠 CompuPalace</span><span><b>15 min</b></span></div>
+            <div style="display: flex; justify-content: space-between;"><span>🔵 Marsano</span><span><b>12 min</b></span></div>
+        </div>
+        <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.3); font-size: 0.9rem;">
+            <b>Promedio: ~18 min</b>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['secondary']} 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
-        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem;">⏱️ Tiempos de Entrega</h4>
-        <div style="font-size: 0.85rem; line-height: 2.2;">
+    <div style="background: linear-gradient(135deg, {COLORS['highlight']} 0%, #ff6b6b 100%); color: white; padding: 1.2rem; border-radius: 10px;">
+        <h4 style="margin: 0 0 0.8rem 0; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 0.5rem;">⚠️ Desde Lurín</h4>
+        <div style="font-size: 0.85rem; line-height: 2;">
             <div style="display: flex; justify-content: space-between;"><span>🔴 Wilson</span><span><b>1h 20min</b></span></div>
             <div style="display: flex; justify-content: space-between;"><span>🔵 Paruro</span><span><b>1h 25min</b></span></div>
             <div style="display: flex; justify-content: space-between;"><span>🟢 Malvinas</span><span><b>1h 30min</b></span></div>
             <div style="display: flex; justify-content: space-between;"><span>🟣 Azángaro</span><span><b>1h 25min</b></span></div>
-            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 8px;"><span>🟠 CompuPalace</span><span><b>50min</b></span></div>
-            <div style="display: flex; justify-content: space-between;"><span>🔵 Marsano</span><span><b>45min</b></span></div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; margin-top: 6px;"><span>🟠 CompuPalace</span><span><b>50 min</b></span></div>
+            <div style="display: flex; justify-content: space-between;"><span>🔵 Marsano</span><span><b>45 min</b></span></div>
+        </div>
+        <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.3); font-size: 0.9rem;">
+            <b>Promedio: ~1h 06min</b>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="insight-box-highlight" style="font-size: 0.85rem;">
-    <strong>🚨 Zona Crítica:</strong> Las 4 zonas del centro de Lima (Wilson, Paruro, Malvinas, Azángaro) requieren <b>+1h 20min</b> de traslado, limitando a <b>máximo 2-3 entregas/día</b> hacia estas zonas que concentran el grueso de las ventas minoristas.
+
+with col3:
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['secondary']} 100%); color: white; padding: 1.2rem; border-radius: 10px; text-align: center;">
+        <h4 style="margin: 0 0 1rem 0; font-size: 0.95rem;">📊 Incremento</h4>
+        <div style="font-size: 2.5rem; font-weight: 700; color: #ffd93d;">+267%</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.5rem;">en tiempo<br>promedio</div>
+        <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.3); font-size: 0.8rem;">
+            De <b>18 min</b><br>a <b>1h 06min</b>
+        </div>
     </div>
     """, unsafe_allow_html=True)
+
+# Calcular métricas por zona del mapa para el insight
+zonas_mapa = ['WILSON', 'PARURO', 'MALVINAS', 'AZANGARO', 'COMPUPALACE', 'MARSANO']
+zonas_data = []
+total_ventas_zonas = df[df['ZONA_CONSOLIDADO'].isin(zonas_mapa)]['TOTAL_2025'].sum()
+
+for zona in zonas_mapa:
+    df_zona = df[df['ZONA_CONSOLIDADO'] == zona]
+    skus = df_zona['ARTICULO'].nunique()
+    venta = df_zona['TOTAL_2025'].sum()
+    pct_contribucion = (venta / total_ventas_zonas * 100) if total_ventas_zonas > 0 else 0
+    zonas_data.append({'skus': skus, 'venta': venta, 'pct': pct_contribucion})
+
+# Calcular total de las 4 zonas críticas del centro
+venta_centro = sum([zonas_data[i]['venta'] for i in range(4)])
+pct_centro = sum([zonas_data[i]['pct'] for i in range(4)])
+
+st.markdown(f"""
+<div class="insight-box-highlight">
+<strong>🚨 Impacto Operativo del Cambio:</strong><br><br>
+• <b>Tiempo promedio de entrega aumentó 267%</b> (de 18 min a 1h 06min en promedio)<br><br>
+• Las zonas del <b>centro de Lima</b> (Wilson, Paruro, Malvinas, Azángaro) pasaron de <b>~20 min</b> a <b>+1h 20min</b><br><br>
+• Estas 4 zonas concentran <b>{pct_centro:.1f}%</b> de las ventas (${venta_centro/1000:,.0f}K) y operan <b>100% canal MINORISTA</b><br><br>
+• <b>Capacidad de entrega reducida:</b> Antes se podían hacer 6-8 ciclos/día, ahora máximo 2-3 ciclos/día hacia el centro
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # INDICADORES PRINCIPALES 2025
